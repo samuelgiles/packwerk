@@ -28,7 +28,9 @@ module Packwerk
           .select { |railtie| railtie.is_a?(Rails::Engine) }
           .push(Rails.application)
           .flat_map do |engine|
-          (engine.config.autoload_paths + engine.config.eager_load_paths + engine.config.autoload_once_paths).uniq
+          (engine.config.autoload_paths + engine.config.eager_load_paths + engine.config.autoload_once_paths)
+            .map(&:to_s)
+            .uniq
         end
       end
 
