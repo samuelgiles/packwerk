@@ -34,7 +34,7 @@ module Packwerk
     end
 
     def deprecated_references_file_for(package)
-      File.join(@root_path, package.name, "deprecated_references.yml")
+      File.join(@root_path, package.name, Packwerk::DeprecatedReferences::CONFIG_FILENAME)
     end
   end
 end

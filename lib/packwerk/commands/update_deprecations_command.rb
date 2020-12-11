@@ -71,7 +71,7 @@ module Packwerk
         result_status = all_offenses.empty?
         message = <<~EOS
           #{@offenses_formatter.show_offenses(all_offenses)}
-          ✅ `deprecated_references.yml` has been updated.
+          ✅ `#{DeprecatedReferences::CONFIG_FILENAME}` has been updated.
         EOS
 
         Result.new(message: message, status: result_status)

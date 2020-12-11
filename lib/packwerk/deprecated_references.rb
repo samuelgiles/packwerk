@@ -14,6 +14,8 @@ module Packwerk
     extend T::Sig
     include ReferenceLister
 
+    CONFIG_FILENAME = "deprecated_references.yml"
+
     def initialize(package, filepath)
       @package = package
       @filepath = filepath
