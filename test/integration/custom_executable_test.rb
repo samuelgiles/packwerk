@@ -27,6 +27,43 @@ module Packwerk
         assert_match(/No offenses detected/, captured_output)
       end
 
+      test "'packwerk check' with migrations using belongs_to succeeds" do
+        open_app_file(TIMELINE_PATH, "db", "migrate", "20201211120554_my_fancy_migration.rb") do |file|
+          file.write(
+            <<~RUBY
+              # frozen_string_literal: true
+              class DropRecreateReceiptTable < ActiveRecord::Migration[6.1]
+                mark_as_podded_migration!
+
+                def up
+                  drop_and_recreate_table(:checkouts_one_receipts)
+                end
+
+                def up
+                  drop_and_recreate_table(:checkouts_one_receipts)
+                end
+
+                private
+
+                def drop_and_recreate_table(table)
+                  drop_table(table)
+
+                  create_table(table) do |t|
+                    t.belongs_to(:order, null: true)
+
+                    t.string(:token, null: false)
+                  end
+                end
+              end
+            RUBY
+          )
+          file.flush
+        end
+
+        assert_successful_run("check")
+        assert_match(/No offenses detected/, captured_output)
+      end
+
       test "'packwerk check' with violations fails and displays violations" do
         open_app_file(TIMELINE_PATH, "app", "models", "timeline_comment.rb") do |file|
           file.write("class TimelineComment; belongs_to :order, class_name: '::Order'; end")

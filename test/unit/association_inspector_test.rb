@@ -45,6 +45,23 @@ module Packwerk
       assert_nil inspector.constant_name_from_node(node, ancestors: [])
     end
 
+    test "passes on association usage in migrations" do
+      migration = parse(
+        <<~RUBY
+          class MyFancyMigration < ActiveRecord::Migration[6.0]
+            create_table(:my_table) do |t|
+              t.belongs_to :order
+            end
+          end
+        RUBY
+      )
+      ancestors = [migration.children[2], migration]
+      node = migration.children[2].children.last
+      inspector = AssociationInspector.new(inflector: @inflector)
+
+      assert_nil inspector.constant_name_from_node(node, ancestors: ancestors)
+    end
+
     test "gives up on metaprogrammed associations" do
       node = parse("has_one association_name")
       inspector = AssociationInspector.new(inflector: @inflector)
