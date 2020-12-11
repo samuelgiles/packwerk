@@ -7,6 +7,7 @@ require "packwerk/node"
 module Packwerk
   # Extracts the implicit constant reference from an active record association
   class AssociationInspector
+    extend T::Sig
     include ConstantNameInspector
 
     RAILS_ASSOCIATIONS = %i(
@@ -27,6 +28,7 @@ module Packwerk
 
       arguments = Node.method_arguments(node)
       return unless (association_name = association_name(arguments))
+      return if within_db_migration?(ancestors)
 
       if (class_name_node = custom_class_name(arguments))
         return unless Node.string?(class_name_node)
@@ -41,6 +43,17 @@ module Packwerk
     def association?(node)
       method_name = Node.method_name(node)
       @associations.include?(method_name)
+    end
+
+    ACTIVE_RECORD_MIGRATION_CLASS_NAME = "ActiveRecord::Migration"
+
+    sig { params(ancestors: T::Array[AST::Node]).returns(T::Boolean) }
+    def within_db_migration?(ancestors)
+      migration = ancestors.find { |node| Node.class?(node) }
+      migration_parent_class = migration && Node.parent_class(migration)&.children&.first
+      return false unless migration_parent_class
+
+      Node.constant_name(migration_parent_class) == ACTIVE_RECORD_MIGRATION_CLASS_NAME
     end
 
     def custom_class_name(arguments)
